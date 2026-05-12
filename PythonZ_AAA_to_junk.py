@@ -1,24 +1,84 @@
 # import pandas as pd
 # import matplotlib.pyplot as plt
+import time as t
 
 def inital_assessment(stock, *stocks):
     #funkcje przetwarzających łańcuch znaków
+    #funkcja f string
+
     ticker = ".".join([stock["Ticker"],"US"])
+    zysk_2025 = stock["Zysk_strata_netto"][0]
+    sector_pl = sectors_translated[stock["Sektor"]]
     print("\n")
-    print(f"Analiza spółki {stock["Podmiot"]} o tickerze  {ticker}")
-    print("Rentownosć na sprzedaży {}%".format(round(stock["Zysk_strata_netto"]/stock["Przychody_ogolem"],5)*100))
+    print(f"Analiza spółki {stock["Podmiot"]} o tickerze {ticker} z sektora {sector_pl}")
+    temp = len(f"Analiza spółki {stock["Podmiot"]} o tickerze {ticker} z sektora {sector_pl}")
+    print("Analiza".center(temp, "-"))
+    t.sleep(1)
+    ros = zysk_2025/stock["Przychody_ogolem"]
+    roe = zysk_2025/stock["Kapital_wlasny"]
+    roa = zysk_2025/stock["Aktywa_ogolem"]
+    o_margin = stock["Wynik_operacyjny"] / stock["Przychody_ogolem"]
+    ebitda = stock["Wynik_operacyjny"] + stock["Amortyzacja_deprecjacja"]
+    debt_ratio = stock["Dlug_dlugoterminowy"]/stock["Kapital_wlasny"]
+    equity_ratio = stock["Kapital_wlasny"] - stock["Aktywa_ogolem"]
+    net_debt = stock["Dlug_dlugoterminowy"] - stock["Przychody_ogolem"]
+    assets_turnover = stock["Aktywa_ogolem"]/stock["Przychody_ogolem"]
+    inventory_level = stock["Zapasy"]/stock["Przychody_ogolem"]
+    #avg profit level
+    #stdiv of profits
+    Indicators = list()
+    print("Rentownosć na sprzedaży {}%".format(round(ros,3)*100))
+    print("Rentowność operacyjna {}%".format(round(o_margin,3)*100))
+    print("Rentowność na kapitale własnym {}%".format(round(roe,3)*100))
+    print("Rentowność na aktywach {}%".format(round(roa,3)*100))
+    profitability = True if ros > 0 and o_margin > 0 else False
+    if profitability == True:
+        print("Działalność spółki jest rentowna")
+    else: 
+        print("Działalność spółki nie jest rentowna")
+    print("\n")
+
+    #...wskaźniki
+
+
+    #przekazanie wskaźników
+    #rekurencja może? 
     return None
 
 
-# def rating():
+# def rating(): <-- odebranie wskaźników 
 #     match
 #         case 6:
-    
+# range od zera do 100 pkt
 #     pass
 
 def summary(*args):
     pass
     
+sector_credit_risk = {
+    "Energy": 3,
+    "Materials": 3,
+    "Industrials": 4,
+    "Consumer Discretionary": 3,
+    "Consumer Staples": 5,
+    "Health Care": 4,
+    "Financials": 3,
+    "Information Technology": 4,
+    "Communication Services": 3,
+    "Utilities": 5,
+    "Real Estate": 3}
+sectors_translated  = {
+    "Energy": "Energetyka",
+    "Materials": "Materiały",
+    "Industrials": "Przemysł",
+    "Consumer Discretionary": "Dobra konsumpcyjne cykliczne",
+    "Consumer Staples": "Dobra konsumpcyjne podstawowe",
+    "Health Care": "Ochrona zdrowia",
+    "Financials": "Finanse",
+    "Information Technology": "Technologie informacyjne",
+    "Communication Services": "Usługi komunikacyjne",
+    "Utilities": "Użyteczność publiczna",
+    "Real Estate": "Nieruchomości"}
 
 
 dane_spolki = []
@@ -32,12 +92,12 @@ except:
 dane_spolki.append(
     {
         "Podmiot": "Intel Corporation",
-        "Sektor": "Semiconductors",
+        "Sektor": "Information Technology",
         "Ticker": "INTC",
         "Najwazniejsze_produkty": "Mikroprocesory (Intel Core, Intel Xeon, Intel Atom, Intel Pentium, Intel Celeron), procesory graficzne (Intel Arc), chipset'y, kontrolery sieciowe, FPGA",
         "Koniec_roku_fiskalnego": "27 grudnia 2025",
         "Przychody_ogolem": 52853,
-        "Zysk_strata_netto": -267,
+        "Zysk_strata_netto": [-267, -18756, 1689, 8014, 19868],
         "Aktywa_ogolem": 211429,
         "Zobowiazania_ogolem": 85069,
         "Kapital_wlasny": 114281,
@@ -49,6 +109,6 @@ dane_spolki.append(
 )
 
 
-print(f"{dane_spolki[0]["Podmiot"]} powinien byc warty {dane_spolki[0]["Zysk_strata_netto"]/1000*7}bn")
+print(f"{dane_spolki[0]["Podmiot"]} powinien byc warty {dane_spolki[0]["Zysk_strata_netto"][0]/1000*7:.2f}bn")
 inital_assessment(dane_spolki[0], dane_spolki[:1])
 #print(f"Analizowane spolki: {",".join([stock["Podmiot"], stocks["Podmiot"],])}") -> na pozniej 

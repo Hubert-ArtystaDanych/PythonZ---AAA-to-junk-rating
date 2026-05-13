@@ -1,11 +1,13 @@
 # import pandas as pd
 # import matplotlib.pyplot as plt
 import time as t
+import json
 
+#uzycie zmiennej ilosci argumentów
 def inital_assessment(stock, *stocks):
     #funkcje przetwarzających łańcuch znaków
     #funkcja f string
-
+    stock = stock[0]
     ticker = ".".join([stock["Ticker"],"US"])
     zysk_2025 = stock["Zysk_strata_netto"][0]
     sector_pl = sectors_translated[stock["Sektor"]]
@@ -24,15 +26,17 @@ def inital_assessment(stock, *stocks):
     net_debt = stock["Dlug_dlugoterminowy"] - stock["Przychody_ogolem"]
     assets_turnover = stock["Aktywa_ogolem"]/stock["Przychody_ogolem"]
     inventory_level = stock["Zapasy"]/stock["Przychody_ogolem"]
+    
     #avg profit level
     #stdiv of profits
-    Indicators = list()
     print("Rentownosć na sprzedaży {}%".format(round(ros,3)*100))
     print("Rentowność operacyjna {}%".format(round(o_margin,3)*100))
     print("Rentowność na kapitale własnym {}%".format(round(roe,3)*100))
     print("Rentowność na aktywach {}%".format(round(roa,3)*100))
+    #ternary
     profitability = True if ros > 0 and o_margin > 0 else False
-    if profitability == True:
+    #operator is
+    if profitability is True:
         print("Działalność spółki jest rentowna")
     else: 
         print("Działalność spółki nie jest rentowna")
@@ -42,17 +46,22 @@ def inital_assessment(stock, *stocks):
 
 
     #przekazanie wskaźników
-    #rekurencja może? 
+    inital_assessment(stocks[0],stocks[:1])
     return None
 
 
-# def rating(): <-- odebranie wskaźników 
-#     match
-#         case 6:
-# range od zera do 100 pkt
-#     pass
+def rating(a): #<-- odebranie wskaźników 
+    #match do kapitalizacji + pass dla najmniejszej 
+    #match do branży
+    match a:
+        case 6:
+            pass
+    #wyswietla kontent i zwraca punkty 
+    #range od zera do 100 pkt
+    return points
 
-def summary(*args):
+#
+def summary(nazwa, ticker):
     pass
     
 sector_credit_risk = {
@@ -83,10 +92,14 @@ sectors_translated  = {
 
 dane_spolki = []
 #odczt pliku z danymi spolek
-try:
-    dane_spolki = pd.read_csv(r"companies_metrics")
-except:
-    pass
+with open (r"C:\Users\hubert.dubiel\Documents\Coding_Files\companies_metrics.json","r") as f:
+    dane_spolki_json = json.load(f)
+#print(dane_spolki_json[1])
+
+# try:
+#     dane_spolki = pd.read_csv(r"C:\Users\hubert.dubiel\Documents\Coding_Files\companies_metrics.json") as f:
+# except:
+#     pass
 
 #dodanie testowej spolki  
 dane_spolki.append(
@@ -110,5 +123,5 @@ dane_spolki.append(
 
 
 print(f"{dane_spolki[0]["Podmiot"]} powinien byc warty {dane_spolki[0]["Zysk_strata_netto"][0]/1000*7:.2f}bn")
-inital_assessment(dane_spolki[0], dane_spolki[:1])
+indicators = inital_assessment(dane_spolki, dane_spolki_json)
 #print(f"Analizowane spolki: {",".join([stock["Podmiot"], stocks["Podmiot"],])}") -> na pozniej 

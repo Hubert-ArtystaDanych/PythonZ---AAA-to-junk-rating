@@ -27,12 +27,26 @@ def inital_assessment(stock, *stocks):
     assets_turnover = stock["Aktywa_ogolem"]/stock["Przychody_ogolem"]
     inventory_level = stock["Zapasy"]/stock["Przychody_ogolem"]
     
+    indicators = {
+    "ros": ros,
+    "roe": roe,
+    "roa": roa,
+    "o_margin": o_margin,
+    "ebitda": ebitda,
+    "debt_ratio": debt_ratio,
+    "equity_ratio": equity_ratio,
+    "net_debt": net_debt,
+    "assets_turnover": assets_turnover,
+    "inventory_level": inventory_level
+}
+
     #avg profit level
     #stdiv of profits
     print("Rentownosć na sprzedaży {}%".format(round(ros,3)*100))
     print("Rentowność operacyjna {}%".format(round(o_margin,3)*100))
     print("Rentowność na kapitale własnym {}%".format(round(roe,3)*100))
     print("Rentowność na aktywach {}%".format(round(roa,3)*100))
+
     #ternary
     profitability = True if ros > 0 and o_margin > 0 else False
     #operator is
@@ -46,11 +60,11 @@ def inital_assessment(stock, *stocks):
 
 
     #przekazanie wskaźników
-    inital_assessment(stocks[0],stocks[:1])
-    return None
+    #inital_assessment(stocks[0],stocks[:1])
+    return indicators
 
-
-def rating(a): #<-- odebranie wskaźników 
+#typowanie zmiennych
+def rating(a: dict, scrutiny = 1): #<-- odebranie wskaźników 
     #match do kapitalizacji + pass dla najmniejszej 
     #match do branży
     match a:
@@ -124,4 +138,6 @@ dane_spolki.append(
 
 print(f"{dane_spolki[0]["Podmiot"]} powinien byc warty {dane_spolki[0]["Zysk_strata_netto"][0]/1000*7:.2f}bn")
 indicators = inital_assessment(dane_spolki, dane_spolki_json)
+print(indicators)
+punkty = rating(indicators)
 #print(f"Analizowane spolki: {",".join([stock["Podmiot"], stocks["Podmiot"],])}") -> na pozniej 

@@ -66,7 +66,11 @@ def inital_assessment(stock, *stocks):
 
 #typowanie zmiennych
 #argumenty domyslne
-def rating(a: dict, scrutiny = 0): #<-- odebranie wskaźników
+def rating(a: dict, scrutiny:int = 0):
+    if a["sektor"] not in prefered_sectors:
+        scrutiny += 1
+        if scrutiny > 9:
+            scrutiny = 9
     # print("Wskazniki spolki: ")
     # for wskaznik in a:
     #     print(wskaznik, " -> ", a[wskaznik])
@@ -112,6 +116,8 @@ def rating(a: dict, scrutiny = 0): #<-- odebranie wskaźników
             points = points + 10
         case "Energy":
             points = points + 10
+        case "Financials":
+            points = points - 10
         case "Consumer Staples":
             pass
         case _:
@@ -120,7 +126,7 @@ def rating(a: dict, scrutiny = 0): #<-- odebranie wskaźników
     #wyswietla kontent i zwraca punkty 
     #range od zera do 100 pkt (docelowo -> NVDA moze i 150)
     
-    return points if points > 0 else 0
+    return (points * ((10-scrutiny)/10) if points > 0 else 0)
 
 def no_more_than_ten(pts: float):
     if pts>10:
@@ -177,12 +183,6 @@ dane_spolki = []
 #odczt pliku z danymi spolek
 with open (r"C:\Users\hubert.dubiel\Documents\Coding_Files\companies_metrics.json","r") as f:
     dane_spolki_json = json.load(f)
-#print(dane_spolki_json[1])
-
-# try:
-#     dane_spolki = pd.read_csv(r"C:\Users\hubert.dubiel\Documents\Coding_Files\companies_metrics.json") as f:
-# except:
-#     pass
 
 #dodanie testowej spolki  
 dane_spolki.append(

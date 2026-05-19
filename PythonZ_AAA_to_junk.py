@@ -2,6 +2,7 @@
 # import matplotlib.pyplot as plt
 import time as t
 import json
+import random as r
 
 #uzycie zmiennej ilosci argumentów
 def inital_assessment(stock, *stocks):
@@ -90,11 +91,11 @@ def rating(a: dict, scrutiny:int = 0):
     
     points +=simple_as(a["ros"])
     pokaz_punkty("ros",simple_as(a["ros"]))
-    points +=simple_as(a["roe"])*4
+    points +=simple_as(a["roe"]) * 3
     pokaz_punkty("roe",simple_as(a["roe"]))
     points +=simple_as(a["o_margin"])
     pokaz_punkty("o_margin",simple_as(a["o_margin"]))
-    points +=simple_as(a["roa"])
+    points +=simple_as(a["roa"]) * 2
     pokaz_punkty("roa",simple_as(a["roa"]))
     points +=enterprise_size_bonus(a["ebitda"])
     pokaz_punkty("ebitda",enterprise_size_bonus(a["ebitda"]))
@@ -102,7 +103,7 @@ def rating(a: dict, scrutiny:int = 0):
     pokaz_punkty("net debt -3 x ebitda",enterprise_size_bonus(a["net_debt"]+3*a["ebitda"])/1.8)
     points = points - simple_as(a["debt_ratio"])*6
     pokaz_punkty("debt_ratio",simple_as(a["debt_ratio"])*6)
-    points = points - simple_as(a["equity_ratio"]) #equity ratio
+    points = points + simple_as(a["equity_ratio"]) * 2 #equity ratio
     pokaz_punkty("equity_ratio",simple_as(a["equity_ratio"]))
     #uzycie walrus := 
     if(inventory_usage:= simple_as(a["inventory_level"])) == 10:
@@ -123,20 +124,22 @@ def rating(a: dict, scrutiny:int = 0):
         case _:
             point = points + sector_credit_risk[a["sektor"]]
     pokaz_punkty("sektor", 10)
-    #wyswietla kontent i zwraca punkty 
-    #range od zera do 100 pkt (docelowo -> NVDA moze i 150)
-    
+
+    #uzycie nested functions
+
+    def no_more_than_ten(pts: float):
+        if pts>10:
+            return 10
+        else:
+            return pts
+    def pokaz_punkty(wskaznik: str, pts: float):
+        pts = int(round(pts,0))
+        print(f"Wskaznik {wskaznik} dodal {pts} do oceny")
+        return None
+
     return (points * ((10-scrutiny)/10) if points > 0 else 0)
 
-def no_more_than_ten(pts: float):
-    if pts>10:
-        return 10
-    else:
-        return pts
-def pokaz_punkty(wskaznik: str, pts: float):
-    pts = int(round(pts,0))
-    print(f"Wskaznik {wskaznik} dodal {pts} do oceny")
-    return None
+
 
 def summary(Punkty, Stock):
     nazwa = Stock["Podmiot"]
@@ -215,7 +218,12 @@ print(f"Ilosc punktow za ocene kredytowa: {punkty:.0f}pkt")
 all_stocks = {}
 for sto in dane_spolki_json:
     indicators = inital_assessment(sto)
-    punkty = rating(indicators)
+    # losowanie czy firma bedzie ostrzej oceniana
+    if r.randint(0,10) < 5:
+        scr = 2
+    else:
+        scr = 0
+    punkty = rating(indicators,scrutiny=scr)
     print(f"Ilosc punktow {sto["Podmiot"]}za ocene kredytowa: {punkty:.0f}pkt")
     all_stocks[sto["Podmiot"]] = punkty
 for ita in dane_spolki_json:

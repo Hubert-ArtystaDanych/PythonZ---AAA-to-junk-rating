@@ -1,8 +1,9 @@
-# import pandas as pd
+import pandas as pd
 # import matplotlib.pyplot as plt
 import time as t
 import json
 import random as r
+from typing import Generator
 
 #uzycie zmiennej ilosci argumentów
 def inital_assessment(stock, *stocks):
@@ -48,7 +49,8 @@ def inital_assessment(stock, *stocks):
     print("Rentowność operacyjna {}%".format(round(o_margin,3)*100))
     print("Rentowność na kapitale własnym {}%".format(round(roe,3)*100))
     print("Rentowność na aktywach {}%".format(round(roa,3)*100))
-
+    print("\n")
+        
     #ternary
     profitability = True if ros > 0 and o_margin > 0 else False
     #operator is
@@ -58,11 +60,14 @@ def inital_assessment(stock, *stocks):
         print("Działalność spółki nie jest rentowna")
     print("\n")
 
-    #...wskaźniki
-
-
-    #przekazanie wskaźników
-    #inital_assessment(stocks[0],stocks[:1])
+    #uzycie iteratora
+    zysk_iter = iter(stock["Zysk_strata_netto"])
+    print("Zyski firmy na przestrzeni lat: ")
+    rok = 2025
+    for it in range(5):
+        print(rok, " - ", next(zysk_iter), end="; ")
+    print("\n")
+    
     return indicators
 
 #typowanie zmiennych
@@ -76,8 +81,19 @@ def rating(a: dict, scrutiny:int = 0):
     # for wskaznik in a:
     #     print(wskaznik, " -> ", a[wskaznik])
     points = 25
-    #match do kapitalizacji + pass dla najmniejszej 
-    #match do branży
+
+        #uzycie nested functions
+
+    def no_more_than_ten(pts: float):
+        if pts>10:
+            return 10
+        else:
+            return pts
+    def pokaz_punkty(wskaznik: str, pts: float):
+        pts = int(round(pts,0))
+        print(f"Wskaznik {wskaznik} dodal {pts} do oceny")
+        return None
+
     #uzycie lambda
     simple_as = lambda indic: no_more_than_ten(indic * 90)/3
     enterprise_size_bonus = lambda ebitda: (
@@ -125,20 +141,8 @@ def rating(a: dict, scrutiny:int = 0):
             point = points + sector_credit_risk[a["sektor"]]
     pokaz_punkty("sektor", 10)
 
-    #uzycie nested functions
-
-    def no_more_than_ten(pts: float):
-        if pts>10:
-            return 10
-        else:
-            return pts
-    def pokaz_punkty(wskaznik: str, pts: float):
-        pts = int(round(pts,0))
-        print(f"Wskaznik {wskaznik} dodal {pts} do oceny")
-        return None
 
     return (points * ((10-scrutiny)/10) if points > 0 else 0)
-
 
 
 def summary(Punkty, Stock):
@@ -155,6 +159,22 @@ def summary(Punkty, Stock):
     )
     return result
     
+#deklaracja generatora 
+def est_debt_cost(Stock: dict, wibor_3m = 0.05) -> Generator[float, None, None]:
+    """"Cost of debt based on risk deducted from financial indicators"""
+    for klucz in Stock:
+      Punkty = Stock[klucz]
+      margin = ( 
+      0.005 if Punkty > 100 else
+      0.01 - (Punkty/10000)if Punkty > 90 else
+      0.02 - (Punkty/10000)if Punkty > 75 else
+      0.04 - (Punkty/10000)if Punkty > 25 else
+      0.19
+      )
+      cost_of_debt = wibor_3m + margin
+      yield  (f"Spółka {klucz} powinna miec koszt dlugu {round(cost_of_debt,2)*100}%") if cost_of_debt < 0.20 else f"Spółka {klucz} jest nieinwestowalna"
+
+
 sector_credit_risk = {
     "Energy": 3,
     "Materials": 3,
@@ -184,10 +204,10 @@ sectors_translated  = {
 
 dane_spolki = []
 #odczt pliku z danymi spolek
+#uzycie with
 with open (r"C:\Users\hubert.dubiel\Documents\Coding_Files\companies_metrics.json","r") as f:
     dane_spolki_json = json.load(f)
 
-#dodanie testowej spolki  
 dane_spolki.append(
     {
         "Podmiot": "Intel Corporation",
@@ -217,15 +237,24 @@ print(f"Ilosc punktow za ocene kredytowa: {punkty:.0f}pkt")
 
 all_stocks = {}
 for sto in dane_spolki_json:
+    #liczenie wskaznikow
     indicators = inital_assessment(sto)
-    # losowanie czy firma bedzie ostrzej oceniana
+    # losowanie czy firma bedzie ostrozniej oceniana
     if r.randint(0,10) < 5:
         scr = 2
     else:
         scr = 0
+    #przyznawanie punktow
     punkty = rating(indicators,scrutiny=scr)
     print(f"Ilosc punktow {sto["Podmiot"]}za ocene kredytowa: {punkty:.0f}pkt")
     all_stocks[sto["Podmiot"]] = punkty
+
+print("\n")
+#uzycie generatora
+gen = est_debt_cost(all_stocks)
+
 for ita in dane_spolki_json:
     al = ita["Podmiot"]
     print(f"Spolka {al} otrzymala: {all_stocks[al]:.0f}pkt rating: {summary(all_stocks[al],ita)}")
+    print(next(gen))
+    print("\n")

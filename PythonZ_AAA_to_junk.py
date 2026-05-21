@@ -9,7 +9,6 @@ from typing import Generator
 def inital_assessment(stock, *stocks):
     #funkcje przetwarzających łańcuch znaków
     #funkcja f string
-    #stock = stock[0] -> odkomentowac pozniej 
     ticker = ".".join([stock["Ticker"],"US"])
     zysk_2025 = stock["Zysk_strata_netto"][0]
     sector_pl = sectors_translated[stock["Sektor"]]
@@ -171,7 +170,7 @@ def est_debt_cost(Stock: dict, wibor_3m = 0.05) -> Generator[float, None, None]:
       0.19
       )
       cost_of_debt = wibor_3m + margin
-      yield  (f"Spółka {klucz} powinna miec koszt dlugu {round(cost_of_debt,4)*100}%") if cost_of_debt < 0.20 else f"Spółka {klucz} jest nieinwestowalna"
+      yield  (f"Spółka {klucz} powinna miec koszt dlugu {round(cost_of_debt,4)*100:.2f}%") if cost_of_debt < 0.20 else f"Spółka {klucz} jest nieinwestowalna"
 
 
 sector_credit_risk = {
@@ -205,7 +204,7 @@ dane_spolki_json = []
 #odczt pliku z danymi spolek
 #uzycie with
 try:
-    with open (r"C:\Users\hubert.dubiel\Documents\Coding_Files\companies_metrics.jsonn","r") as f:
+    with open (r"C:\Users\hubert.dubiel\Documents\Coding_Files\companies_metrics.json","r") as f:
         dane_spolki_json = json.load(f)
     print("Plik ze spólkami został zaczytany")
 except Exception as e:

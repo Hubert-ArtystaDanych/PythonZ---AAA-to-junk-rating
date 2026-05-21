@@ -65,9 +65,7 @@ def inital_assessment(stock, *stocks):
     print("Zyski firmy na przestrzeni lat: ")
     rok = 2025
     for it in range(5):
-        print(rok, " - ", next(zysk_iter), end="; ")
-    print("\n")
-    
+        print(rok, " - ", next(zysk_iter)," mld")
     return indicators
 
 #typowanie zmiennych
@@ -106,27 +104,28 @@ def rating(a: dict, scrutiny:int = 0):
     )
     
     points +=simple_as(a["ros"])
-    pokaz_punkty("ros",simple_as(a["ros"]))
+    #pokaz_punkty("ros",simple_as(a["ros"]))
     points +=simple_as(a["roe"]) * 3
-    pokaz_punkty("roe",simple_as(a["roe"]))
+    #pokaz_punkty("roe",simple_as(a["roe"]))
     points +=simple_as(a["o_margin"])
-    pokaz_punkty("o_margin",simple_as(a["o_margin"]))
+    #pokaz_punkty("o_margin",simple_as(a["o_margin"]))
     points +=simple_as(a["roa"]) * 2
-    pokaz_punkty("roa",simple_as(a["roa"]))
+    #pokaz_punkty("roa",simple_as(a["roa"]))
     points +=enterprise_size_bonus(a["ebitda"])
-    pokaz_punkty("ebitda",enterprise_size_bonus(a["ebitda"]))
+    #pokaz_punkty("ebitda",enterprise_size_bonus(a["ebitda"]))
     points +=enterprise_size_bonus(a["net_debt"]+7*a["ebitda"])/1.8
-    pokaz_punkty("net debt -3 x ebitda",enterprise_size_bonus(a["net_debt"]+3*a["ebitda"])/1.8)
+    #pokaz_punkty("net debt -3 x ebitda",enterprise_size_bonus(a["net_debt"]+3*a["ebitda"])/1.8)
     points = points - simple_as(a["debt_ratio"])*6
-    pokaz_punkty("debt_ratio",simple_as(a["debt_ratio"])*6)
+    #pokaz_punkty("debt_ratio",simple_as(a["debt_ratio"])*6)
     points = points + simple_as(a["equity_ratio"]) * 2 #equity ratio
-    pokaz_punkty("equity_ratio",simple_as(a["equity_ratio"]))
+    #pokaz_punkty("equity_ratio",simple_as(a["equity_ratio"]))
+
     #uzycie walrus := 
     if(inventory_usage:= simple_as(a["inventory_level"])) == 10:
         points = points - inventory_usage /2
     else:
         points = points - inventory_usage/4
-    pokaz_punkty("inventory_level", simple_as(a["inventory_level"]))
+    #pokaz_punkty("inventory_level", simple_as(a["inventory_level"]))
     #uzycie match, uzycie pass
     match a["sektor"]:
         case "Information Technology":
@@ -139,7 +138,7 @@ def rating(a: dict, scrutiny:int = 0):
             pass
         case _:
             point = points + sector_credit_risk[a["sektor"]]
-    pokaz_punkty("sektor", 10)
+    #pokaz_punkty("sektor", 10)
 
 
     return (points * ((10-scrutiny)/10) if points > 0 else 0)
@@ -172,7 +171,7 @@ def est_debt_cost(Stock: dict, wibor_3m = 0.05) -> Generator[float, None, None]:
       0.19
       )
       cost_of_debt = wibor_3m + margin
-      yield  (f"Spółka {klucz} powinna miec koszt dlugu {round(cost_of_debt,2)*100}%") if cost_of_debt < 0.20 else f"Spółka {klucz} jest nieinwestowalna"
+      yield  (f"Spółka {klucz} powinna miec koszt dlugu {round(cost_of_debt,4)*100}%") if cost_of_debt < 0.20 else f"Spółka {klucz} jest nieinwestowalna"
 
 
 sector_credit_risk = {
@@ -202,13 +201,18 @@ sectors_translated  = {
     "Real Estate": "Nieruchomości"}
 
 
-dane_spolki = []
+dane_spolki_json = []
 #odczt pliku z danymi spolek
 #uzycie with
-with open (r"C:\Users\hubert.dubiel\Documents\Coding_Files\companies_metrics.json","r") as f:
-    dane_spolki_json = json.load(f)
+try:
+    with open (r"C:\Users\hubert.dubiel\Documents\Coding_Files\companies_metrics.jsonn","r") as f:
+        dane_spolki_json = json.load(f)
+    print("Plik ze spólkami został zaczytany")
+except Exception as e:
+    print(e)
+    print("Plik nie został zaczytany, sprawdź czy posiadasz plik i zmodyfikowałeś ścieżkę")
 
-dane_spolki.append(
+dane_spolki_json.append(
     {
         "Podmiot": "Intel Corporation",
         "Sektor": "Information Technology",
@@ -228,12 +232,9 @@ dane_spolki.append(
 )
 
 
-print(f"{dane_spolki[0]["Podmiot"]} powinien byc warty {dane_spolki[0]["Zysk_strata_netto"][0]/1000*7:.2f}bn")
-indicators = inital_assessment(dane_spolki[0])
-#print(indicators)
-punkty = rating(indicators)
+
 #print(f"Analizowane spolki: {",".join([stock["Podmiot"], stocks["Podmiot"],])}") -> na pozniej 
-print(f"Ilosc punktow za ocene kredytowa: {punkty:.0f}pkt")
+#print(f"Ilosc punktow za ocene kredytowa: {punkty:.0f}pkt")
 
 all_stocks = {}
 for sto in dane_spolki_json:
